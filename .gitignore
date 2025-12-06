@@ -1,0 +1,82 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Environment variables
+.env
+*.env
+
+# Logs
+*.log
+logs/
+debug.log
+
+# Cache & temporary files
+*.cache/
+.cache/
+tmp/
+temp/
+
+# -------------------------
+# Project-specific ignores
+# -------------------------
+
+# Chroma DB storage
+chroma_db/
+vector_data/
+vector_store/
+index_store/
+
+# Resume or user files
+resume.pdf
+*.pdf
+
+# Scraped job output
+scraped_jobs.json
+job_results.json
+
+# Embedding model cache
+huggingface_cache/
+hf_cache/
+sentence_transformers_cache/
+
+# Selenium drivers downloaded by webdriver_manager
+drivers/
+chromedriver/
+chromedriver.exe
+geckodriver/
+geckodriver.exe
+
+# -------------------------
+# OS / Editor Junk
+# -------------------------
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# -------------------------
+# Docker
+# -------------------------
+docker-data/
+*.pid
