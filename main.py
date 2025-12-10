@@ -30,17 +30,17 @@ from vector import build_vector_db
 from chat import rag_answer
 
 if __name__ == "__main__":
-    # STEP 1 SCRAPE
+    # SCRAPE
     print("Scraping Indeed...")
     scraped_jobs = scrape_indeed("software+developer", "Kolkata", max_pages=2)
 
     print(f"Scraped {len(scraped_jobs)} jobs.")
 
-    # STEP 2 VECTOR DB
+    # VECTOR DB
     print("Building vector database...")
     build_vector_db(scraped_jobs)
 
-    # STEP 3 CHATBOT LOOP
+    # CHATBOT LOOP
     print("\nRAG Chatbot ready! Ask anything. Press q to quit.\n")
 
     while True:

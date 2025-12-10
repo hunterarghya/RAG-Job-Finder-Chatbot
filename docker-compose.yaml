@@ -1,17 +1,25 @@
 # version: "3.9"
 
 # services:
-#   app:
+#   api:
 #     build: .
-#     container_name: aiproj
-#     volumes:
-#       - .:/app
-#       - chroma_data:/chroma/data # persistent vector DB
-#     working_dir: /app
-#     command: python main.py
+#     container_name: rag-job-api
+#     env_file: .env
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - mongo
+
+#   mongo:
+#     image: mongo:5
+#     container_name: rag-job-mongo
+#     restart: always
 #     environment:
-#       - HOME=/root
-#       - PYTHONUNBUFFERED=1
+#       MONGO_INITDB_DATABASE: ragdb
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo_data:/data/db
 
 # volumes:
-#   chroma_data:
+#   mongo_data:

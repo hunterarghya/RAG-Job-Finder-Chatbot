@@ -1,5 +1,3 @@
-#scrape.py
-
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -14,11 +12,33 @@ def expand_shadow(driver, element):
     return driver.execute_script("return arguments[0].shadowRoot", element)
 
 def scrape_indeed(job, location, max_pages=1):
+
+
+    #LOCAL -----------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------
     chrome_options = Options()
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
 
     driver = webdriver.Chrome(options=chrome_options)
+
+    #DOCKER------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------
+    # chrome_options = Options()
+    # chrome_options.add_argument("--headless=new")
+    # chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--disable-gpu")
+    # chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    # chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+    # chrome_options.add_argument("--window-size=1920,1080")
+
+    # driver = webdriver.Chrome(options=chrome_options)
+
+    #------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------
+
+
     results = []
 
     base_url = f"https://in.indeed.com/jobs?q={job}&l={location}"
@@ -32,20 +52,20 @@ def scrape_indeed(job, location, max_pages=1):
         time.sleep(4)
 
         try:
-            # This <indeed-job-card-item> lives inside a shadow DOM
+            
             root1 = driver.find_element(By.CSS_SELECTOR, "div#mosaic-provider-jobcards")
-            # find internal mosaic-zone
+            
             shadow_host = root1.find_element(By.CSS_SELECTOR, "mosaic-provider-jobcards")
             shadow_root = expand_shadow(driver, shadow_host)
 
             job_cards = shadow_root.find_elements(By.CSS_SELECTOR, "div.jobCard_mainContent")
 
         except Exception:
-            print("⚠ Shadow DOM structure changed — trying fallback selector")
+            print("WARNING!!! Shadow DOM structure changed — trying fallback selector")
             job_cards = driver.find_elements(By.CSS_SELECTOR, "div.job_seen_beacon")
 
         if not job_cards:
-            print("⚠ No job cards found. Indeed blocked or layout changed.")
+            print("WARNING!!! No job cards found. Indeed blocked or layout changed.")
             continue
 
         for job_card in job_cards:
@@ -70,7 +90,7 @@ def scrape_indeed(job, location, max_pages=1):
             else:
                 link = "N/A"
 
-            # Recursively scraping actual job description from job page
+            # scraping actual job description from job page
             description = scrape_description(driver, link)
 
             results.append({
@@ -104,7 +124,7 @@ def scrape_description(driver, link):
             txt = desc[0].text.strip()
         else:
             # fallback
-            txt = driver.find_element(By.TAG_NAME, "body").text[:500]  # first 500 chars
+            txt = driver.find_element(By.TAG_NAME, "body").text[:500]
 
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
