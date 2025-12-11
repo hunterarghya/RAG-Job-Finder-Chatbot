@@ -87,6 +87,7 @@ ChromaDB stores:
 - **Python** – Core backend language
 - **OAuth2 + JWT Auth** – Secure authentication (OAuth2PasswordBearer with JWT tokens)
 - **MongoDB (PyMongo)** – Database for users, resumes & scraped jobs
+- **ImageKit** – External storage for resume pdf's
 - **ChromaDB** – Vector database for semantic search
 - **Sentence Transformers** – Embedding model for resume + job descriptions
 - **LangChain Text Splitters** – Chunking for RAG pipeline
