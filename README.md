@@ -2,10 +2,14 @@
 
 A lightweight RAG-based chatbot that:
 
-- Scrapes job listings from Indeed
+- Scrapes job listings from Indeed and Naukri
 - Embeds resume + job descriptions into a vector database
 - Matches the best jobs for a candidate
 - Provides conversational insights using Groq LLMs
+
+Purpose of the Application:
+
+A unified job-search platform that automatically scrapes jobs from multiple portals like LinkedIn, Indeed, Naukri etc, centralizes them in one dashboard, and uses an AI chatbot to analyze your resume, recommend the best-fit roles, and highlight missing skills or market demands—so you don't need to visit multiple sites or read every job description manually.
 
 ---
 
@@ -28,7 +32,7 @@ A lightweight RAG-based chatbot that:
   - Missing skills
   - Fit analysis across all scraped jobs
 
-### 🕸️ Web Scraping (Indeed)
+### 🕸️ Web Scraping (Indeed and Naukri)
 
 - Automated job scraping using:
   - BeautifulSoup
@@ -37,6 +41,7 @@ A lightweight RAG-based chatbot that:
   - Title
   - Company
   - Location
+  - Salary
   - Full job description
   - Apply link
 
@@ -92,7 +97,7 @@ ChromaDB stores:
 - **Sentence Transformers** – Embedding model for resume + job descriptions
 - **LangChain Text Splitters** – Chunking for RAG pipeline
 - **PyMuPDF & PyPDF** – Resume text extraction
-- **Selenium + BeautifulSoup** – Job scraping from Indeed
+- **Selenium + BeautifulSoup** – Job scraping from Indeed and Naukri
 - **Groq LLM API** – Fast LLM inference for chatbot responses
 - **Uvicorn** – ASGI server
 - **Docker & Docker Compose** – Containerized deployment (future)
