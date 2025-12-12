@@ -6,6 +6,7 @@ from api.db import users_col, jobs_col
 from api.deps import get_current_user
 
 from scrape import scrape_indeed
+from scrape_naukri import scrape_naukri
 from vector import store_jobs
 from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
 from api.imagekit_client import imagekit
@@ -146,17 +147,24 @@ def trigger_scrape(
     pages: int = Form(1),
     current_user: dict = Depends(get_current_user)
 ):
-    scraped = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
+    scraped_naukri = scrape_naukri(job_title.replace(" ", "+"), location, max_pages=int(pages))
+    scraped_indeed = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
 
+    scraped = scraped_naukri + scraped_indeed
     
     for s in scraped:
         s["owner"] = current_user["sub"]
 
     if scraped:
+        jobs_col.delete_many({"owner": current_user["sub"]})
         jobs_col.insert_many(scraped)
         store_jobs(scraped)
 
-    return {"count": len(scraped)}
+    return {
+        "count": len(scraped),
+        "naukri": len(scraped_naukri),
+        "indeed": len(scraped_indeed)
+        }
 
 
 # ------------------ GET SCRAPED JOBS --------------------

@@ -93,14 +93,28 @@ def scrape_indeed(job, location, max_pages=1):
             # scraping actual job description from job page
             description = scrape_description(driver, link)
 
+            # results.append({
+            #     "title": title,
+            #     "company": company,
+            #     "location": loc,
+            #     "salary": salary,
+            #     "description": description,
+            #     "link": link,
+            # })
+
             results.append({
-                "title": title,
-                "company": company,
-                "location": loc,
-                "salary": salary,
-                "description": description,
-                "link": link,
+                "title": title or "N/A",
+                "company": company or "N/A",
+                "location": loc or "N/A",
+                "salary": salary or "N/A",
+                "description": description or "N/A",
+                "link": link or "N/A",
+                "source": "indeed",
+
+                # no extra fields for now, but keep structure consistent
+                "extra": {}
             })
+
 
     driver.quit()
     return results
