@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from api.db import users_col
+from api.db import users_col, jobs_col
 from api.auth import hash_password, verify_password, create_access_token, decode_token
 from fastapi.security import OAuth2PasswordRequestForm
+from bson import ObjectId
+from vector import store_jobs, store_resume
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -33,12 +35,54 @@ def register(payload: RegisterIn):
 
 
 
+# @router.post("/login")
+# def login(form_data: OAuth2PasswordRequestForm = Depends()):
+#     user = users_col.find_one({"email": form_data.username})
+#     if not user or not verify_password(form_data.password, user["password"]):
+#         raise HTTPException(401, "Invalid credentials")
+
+#     user_id = str(user["_id"])
+#     token = create_access_token({"sub": user_id, "email": user["email"]})
+#     return {"access_token": token, "token_type": "bearer", "user_id": user_id}
+
+
+
+
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = users_col.find_one({"email": form_data.username})
+
     if not user or not verify_password(form_data.password, user["password"]):
-        raise HTTPException(401, "Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user_id = str(user["_id"])
-    token = create_access_token({"sub": user_id, "email": user["email"]})
-    return {"access_token": token, "token_type": "bearer", "user_id": user_id}
+
+    
+    token = create_access_token({
+        "sub": user_id,
+        "email": user["email"]
+    })
+
+    # ---------------- VECTOR REHYDRATION ----------------
+    try:
+        # Load user's jobs
+        user_jobs = list(jobs_col.find({"owner": user_id}))
+        if user_jobs:
+            store_jobs(user_jobs)
+
+        # Load user's resume
+        resume_url = user.get("resume_url")
+        if resume_url:
+            store_resume(resume_url)
+
+    except Exception as e:
+        
+        print("Vector rebuild failed on login:", e)
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user_id": user_id
+    }
+
+ 

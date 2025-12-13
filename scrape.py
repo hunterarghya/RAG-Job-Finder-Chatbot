@@ -17,8 +17,15 @@ def scrape_indeed(job, location, max_pages=1):
     #LOCAL -----------------------------------------------------------------------------
     #-----------------------------------------------------------------------------------
     chrome_options = Options()
-    chrome_options.add_argument("--start-maximized")
+    # chrome_options.add_argument("--start-maximized")
+    # chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+    chrome_options.add_argument("--window-size=1920,1080")
 
     driver = webdriver.Chrome(options=chrome_options)
 
@@ -111,7 +118,7 @@ def scrape_indeed(job, location, max_pages=1):
                 "link": link or "N/A",
                 "source": "indeed",
 
-                # no extra fields for now, but keep structure consistent
+                
                 "extra": {}
             })
 
@@ -148,8 +155,3 @@ def scrape_description(driver, link):
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
         return "Unable to fetch description"
-
-
-
-
-
