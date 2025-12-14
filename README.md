@@ -11,6 +11,8 @@ Purpose of the Application:
 
 A unified job-search platform that automatically scrapes jobs from multiple portals like LinkedIn, Indeed, Naukri etc, centralizes them in one dashboard, and uses an AI chatbot to analyze your resume, recommend the best-fit roles, and highlight missing skills or market demands—so you don't need to visit multiple sites or read every job description manually.
 
+🚀 **Live Demo:** [Try it here](https://rag-job-finder-chatbot-1.onrender.com/)
+
 ---
 
 ## ✨ Features
