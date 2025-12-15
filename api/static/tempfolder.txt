@@ -71,16 +71,6 @@
       .chat-input button {
         padding: 10px 20px;
       }
-
-      #navbar {
-        position: sticky;
-        top: 0;
-        background: #ffffff;
-        padding: 10px 0;
-        margin-bottom: 20px;
-        z-index: 100;
-        border-bottom: 1px solid #ddd;
-      }
     </style>
   </head>
 
@@ -88,35 +78,8 @@
     <h1>Dashboard</h1>
     <button onclick="logout()">Logout</button>
 
-    <div id="navbar">
-      <a href="#profileSection">Profile</a> |
-      <a href="#resumeSection">Resume</a> | <a href="#jobsSection">Jobs</a> |
-      <a href="#chatSection">Chat</a>
-    </div>
-
-    <!-- PROFILE -->
-    <div class="section" id="profileSection">
-      <h2>Profile</h2>
-
-      <p><b>Name:</b> <span id="profileName">Loading...</span></p>
-      <p><b>Email:</b> <span id="profileEmail">Loading...</span></p>
-
-      <p>
-        <b>Resume:</b>
-        <span id="resumeInfo">Checking...</span>
-      </p>
-      <div id="resumePreview" style="display: none; margin-top: 10px">
-        <iframe
-          id="resumeFrame"
-          width="100%"
-          height="400"
-          style="border: 1px solid #ccc"
-        ></iframe>
-      </div>
-    </div>
-
     <!-- RESUME UPLOAD -->
-    <div class="section" id="resumeSection">
+    <div class="section">
       <h2>Upload Resume</h2>
 
       <input id="resume" type="file" accept="application/pdf" />
@@ -126,7 +89,7 @@
     </div>
 
     <!-- JOB SCRAPER -->
-    <div class="section" id="jobsSection">
+    <div class="section">
       <h2>Scrape Jobs</h2>
 
       <input id="title" placeholder="job title" />
@@ -150,7 +113,7 @@
     </div>
 
     <!-- CHATBOT -->
-    <div class="section" id="chatSection">
+    <div class="section">
       <h2>Chat with Bot</h2>
 
       <div id="chatBox" class="chat-box"></div>
@@ -174,71 +137,7 @@
         location.href = "/static/login.html";
       }
 
-      // Load Profile
-      async function loadProfile() {
-        const res = await fetch("/api/me", {
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (!res.ok) return;
-
-        const user = await res.json();
-
-        document.getElementById("profileName").innerText = user.name || "N/A";
-        document.getElementById("profileEmail").innerText = user.email || "N/A";
-
-        const resumeInfo = document.getElementById("resumeInfo");
-        const preview = document.getElementById("resumePreview");
-        const frame = document.getElementById("resumeFrame");
-
-        //     if (user.resume_url) {
-        //       resumeInfo.innerHTML = `<a href="${user.resume_url}" target="_blank">View Resume</a>`;
-        //     } else {
-        //       resumeInfo.innerText = "Resume not uploaded yet";
-        //     }
-        //   }
-        if (user.resume_url) {
-          resumeInfo.innerHTML = `
-    <a href="${user.resume_url}" target="_blank">Open</a> |
-    <a href="#" onclick="toggleResume('${user.resume_url}')">Preview</a>
-  `;
-        } else {
-          resumeInfo.innerText = "Resume not uploaded yet";
-          preview.style.display = "none";
-        }
-      }
-
-      loadProfile();
-
       //  Resume Upload
-      //   document.getElementById("uploadBtn").onclick = async () => {
-      //     const file = document.getElementById("resume").files[0];
-      //     const status = document.getElementById("resumeStatus");
-
-      //     if (!file) {
-      //       status.style.color = "red";
-      //       status.innerText = "Please select a PDF.";
-      //       return;
-      //     }
-
-      //     const fd = new FormData();
-      //     fd.append("file", file);
-
-      //     const res = await fetch("/api/upload_resume", {
-      //       method: "POST",
-      //       body: fd,
-      //       headers: { Authorization: "Bearer " + token },
-      //     });
-
-      //     if (res.ok) {
-      //       status.style.color = "green";
-      //       status.innerText = "Resume uploaded successfully!";
-      //     } else {
-      //       status.style.color = "red";
-      //       status.innerText = "Upload failed.";
-      //     }
-      //   };
-
       document.getElementById("uploadBtn").onclick = async () => {
         const file = document.getElementById("resume").files[0];
         const status = document.getElementById("resumeStatus");
@@ -249,84 +148,46 @@
           return;
         }
 
-        status.style.color = "black";
-        status.innerText = "Uploading resume...";
-
         const fd = new FormData();
         fd.append("file", file);
 
-        try {
-          const res = await fetch("/api/upload_resume", {
-            method: "POST",
-            body: fd,
-            headers: { Authorization: "Bearer " + token },
-          });
+        const res = await fetch("/api/upload_resume", {
+          method: "POST",
+          body: fd,
+          headers: { Authorization: "Bearer " + token },
+        });
 
-          if (!res.ok) throw new Error();
-
+        if (res.ok) {
           status.style.color = "green";
           status.innerText = "Resume uploaded successfully!";
-          loadProfile(); // refresh resume link
-        } catch {
+        } else {
           status.style.color = "red";
           status.innerText = "Upload failed.";
         }
       };
 
       //  Scrape Jobs
-      //   document.getElementById("scrapeBtn").onclick = async () => {
-      //     const title = document.getElementById("title").value;
-      //     const loc = document.getElementById("loc").value;
-      //     const pages = document.getElementById("pages").value;
-      //     const status = document.getElementById("scrapeStatus");
-
-      //     const fd = new FormData();
-      //     fd.append("job_title", title);
-      //     fd.append("location", loc);
-      //     fd.append("pages", pages);
-
-      //     const res = await fetch("/api/scrape", {
-      //       method: "POST",
-      //       headers: { Authorization: "Bearer " + token },
-      //       body: fd,
-      //     });
-
-      //     const j = await res.json();
-
-      //     status.style.color = "green";
-      //     status.innerText = `${j.count} jobs scraped successfully.`;
-      //   };
-
       document.getElementById("scrapeBtn").onclick = async () => {
         const title = document.getElementById("title").value;
         const loc = document.getElementById("loc").value;
         const pages = document.getElementById("pages").value;
         const status = document.getElementById("scrapeStatus");
 
-        status.style.color = "black";
-        status.innerText = "Scraping pages, this may take some time...";
-
         const fd = new FormData();
         fd.append("job_title", title);
         fd.append("location", loc);
         fd.append("pages", pages);
 
-        try {
-          const res = await fetch("/api/scrape", {
-            method: "POST",
-            headers: { Authorization: "Bearer " + token },
-            body: fd,
-          });
+        const res = await fetch("/api/scrape", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+          body: fd,
+        });
 
-          if (!res.ok) throw new Error();
+        const j = await res.json();
 
-          const j = await res.json();
-          status.style.color = "green";
-          status.innerText = `${j.count} jobs scraped successfully.`;
-        } catch {
-          status.style.color = "red";
-          status.innerText = "Scraping failed.";
-        }
+        status.style.color = "green";
+        status.innerText = `${j.count} jobs scraped successfully.`;
       };
 
       //  Load Jobs
@@ -424,20 +285,6 @@
         });
 
         renderPagination(data.page, data.total_pages);
-      }
-
-      // for resume preview
-      function toggleResume(url) {
-        const preview = document.getElementById("resumePreview");
-        const frame = document.getElementById("resumeFrame");
-
-        if (preview.style.display === "none") {
-          frame.src = url;
-          preview.style.display = "block";
-        } else {
-          preview.style.display = "none";
-          frame.src = "";
-        }
       }
 
       // Pagination rendering

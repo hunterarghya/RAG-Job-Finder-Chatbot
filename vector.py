@@ -20,12 +20,12 @@ RESUME_JSON = DATA_DIR / "resume_docs.json"
 RESUME_EMB = DATA_DIR / "resume_embs.npy"
 
 # ======================================================
-# 🔴 CHANGE 1: REMOVE GLOBAL MODEL LOAD
-# ❌ REMOVED:
+#  CHANGE 1: REMOVE GLOBAL MODEL LOAD
+#  REMOVED:
 # from sentence_transformers import SentenceTransformer
 # embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 #
-# ✅ REPLACED WITH LAZY LOADER
+#  REPLACED WITH LAZY LOADER
 # ======================================================
 
 _embedding_model = None
@@ -64,10 +64,10 @@ def load_json(path: Path):
         return json.load(f)
 
 # ======================================================
-# 🔴 CHANGE 2: USE LAZY MODEL IN EMBEDDING
+#  CHANGE 2: USE LAZY MODEL IN EMBEDDING
 # ======================================================
 def embed_texts(texts, batch_size=64):
-    model = get_embedding_model()   # ✅ lazy load here
+    model = get_embedding_model()   #  lazy load here
     embs = []
 
     for i in range(0, len(texts), batch_size):
@@ -158,13 +158,13 @@ def store_resume(pdf_source: str):
     print(f"Stored {len(chunks)} resume chunks.")
 
 # ======================================================
-# 🔴 CHANGE 3: SAFE LOAD STORE (NO MODEL AT IMPORT)
+# CHANGE 3: SAFE LOAD STORE (NO MODEL AT IMPORT)
 # ======================================================
 def _load_store(json_path, emb_path):
     items = load_json(json_path)
 
     if not items or not Path(emb_path).exists():
-        model = get_embedding_model()  # ✅ only if needed
+        model = get_embedding_model() 
         return [], np.zeros(
             (0, model.get_sentence_embedding_dimension()),
             dtype=np.float32
@@ -188,10 +188,10 @@ def _cosine_similarities(query_emb, emb_matrix):
     return (M @ q).astype(np.float32)
 
 # ======================================================
-# 🔴 CHANGE 4: LAZY MODEL IN RETRIEVAL
+# CHANGE 4: LAZY MODEL IN RETRIEVAL
 # ======================================================
 def retrieve_top_k(query, k_jobs=5, k_resume=5):
-    model = get_embedding_model()   # ✅ lazy load here
+    model = get_embedding_model()   #  lazy load here
     q_emb = model.encode([query])[0].astype(np.float32)
 
     job_docs, job_embs, job_meta = _load_store(JOBS_JSON, JOBS_EMB)

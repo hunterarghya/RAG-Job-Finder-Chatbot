@@ -7,6 +7,7 @@ from bson import ObjectId
 from vector import store_jobs, store_resume
 
 
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 class RegisterIn(BaseModel):
@@ -85,4 +86,3 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "user_id": user_id
     }
 
- 

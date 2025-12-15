@@ -10,6 +10,7 @@ from vector import store_jobs
 from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
 from api.imagekit_client import imagekit
 import os
+import bson
 
 router = APIRouter(prefix="/api", tags=["jobs"])
 
@@ -148,7 +149,7 @@ def trigger_scrape(
 ):
     from scrape import scrape_indeed
     from scrape_naukri import scrape_naukri
-    
+
     scraped_naukri = scrape_naukri(job_title.replace(" ", "+"), location, max_pages=int(pages))
     scraped_indeed = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
 
@@ -170,14 +171,78 @@ def trigger_scrape(
 
 
 # ------------------ GET SCRAPED JOBS --------------------
-@router.get("/jobs")
-def get_jobs(current_user: dict = Depends(get_current_user)):
-    user_id = current_user["sub"]
+# @router.get("/jobs")
+# def get_jobs(current_user: dict = Depends(get_current_user)):
+#     user_id = current_user["sub"]
 
-    jobs = list(jobs_col.find({"owner": user_id}))
+#     jobs = list(jobs_col.find({"owner": user_id}))
 
     
+#     for j in jobs:
+#         j["_id"] = str(j["_id"])
+
+#     return {"jobs": jobs}
+
+
+from fastapi import Query
+
+@router.get("/jobs")
+def get_jobs(
+    current_user: dict = Depends(get_current_user),
+
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+
+    company: str | None = Query(None),
+    title: str | None = Query(None),
+):
+    user_id = current_user["sub"]
+
+    # ---- build filter ----
+    query = {"owner": user_id}
+
+    if company:
+        query["company"] = {"$regex": company, "$options": "i"}
+
+    if title:
+        query["title"] = {"$regex": title, "$options": "i"}
+
+    skip = (page - 1) * limit
+
+    cursor = (
+        jobs_col
+        .find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort("_id", -1)  # newest first
+    )
+
+    jobs = list(cursor)
+    total = jobs_col.count_documents(query)
+
     for j in jobs:
         j["_id"] = str(j["_id"])
 
-    return {"jobs": jobs}
+    return {
+        "jobs": jobs,
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "total_pages": (total + limit - 1) // limit
+    }
+
+
+
+# Profile section --------------------------------------------------
+@router.get("/me")
+def get_me(current_user: dict = Depends(get_current_user)):
+    user = users_col.find_one(
+        {"_id": bson.ObjectId(current_user["sub"])},
+        {"password": 0}  # exclude password
+    )
+
+    if not user:
+        return {}
+
+    user["_id"] = str(user["_id"])
+    return user
