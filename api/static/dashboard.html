@@ -394,6 +394,17 @@
 
         const data = await res.json();
         container.innerHTML = "";
+        // ---------- EMPTY STATE ----------
+        if (!data.jobs || data.jobs.length === 0) {
+          container.innerHTML = `
+    <p style="color: gray; font-style: italic;">
+      No jobs to show yet. Please scrape jobs first.
+    </p>
+  `;
+          document.getElementById("pagination").innerHTML = "";
+          return;
+        }
+        // ---------------------------------
 
         data.jobs.forEach((job) => {
           const div = document.createElement("div");

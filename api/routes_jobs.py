@@ -20,31 +20,6 @@ RESUME_DIR.mkdir(exist_ok=True)
 
 
 # # ---------------- UPLOAD RESUME ------------------
-# @router.post("/upload_resume")
-# async def upload_resume(
-#     file: UploadFile = File(...),
-#     current_user: dict = Depends(get_current_user)
-# ):
-#     user_id = current_user["sub"]
-
-#     if file.content_type not in ("application/pdf",):
-#         raise HTTPException(400, "Only PDF resumes supported.")
-
-#     dest = RESUME_DIR / f"{user_id}.pdf"
-
-#     with open(dest, "wb") as f:
-#         shutil.copyfileobj(file.file, f)
-
-#     from vector import store_resume  
-#     store_resume(str(dest))
-
-#     users_col.update_one(
-#         {"_id": __import__("bson").ObjectId(user_id)},
-#         {"$set": {"resume_path": str(dest)}},
-#     )
-
-#     return {"status": "ok", "path": str(dest)}
-
 @router.post("/upload_resume")
 async def upload_resume(
     file: UploadFile = File(...),
@@ -129,7 +104,7 @@ async def upload_resume(
 
     # Store embeddings to vector db
     from vector import store_resume
-    store_resume(resume_url)
+    store_resume(resume_url, current_user["sub"])
 
     return {
         "status": "ok",
@@ -147,13 +122,13 @@ def trigger_scrape(
     pages: int = Form(1),
     current_user: dict = Depends(get_current_user)
 ):
-    from scrape import scrape_indeed
+    # from scrape import scrape_indeed
     from scrape_naukri import scrape_naukri
 
-    scraped_naukri = scrape_naukri(job_title.replace(" ", "+"), location, max_pages=int(pages))
-    scraped_indeed = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
+    scraped = scrape_naukri(job_title.replace(" ", "+"), location, max_pages=int(pages))
+    # scraped_indeed = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
 
-    scraped = scraped_naukri + scraped_indeed
+    # scraped = scraped_naukri + scraped_indeed
     
     for s in scraped:
         s["owner"] = current_user["sub"]
@@ -161,12 +136,12 @@ def trigger_scrape(
     if scraped:
         jobs_col.delete_many({"owner": current_user["sub"]})
         jobs_col.insert_many(scraped)
-        store_jobs(scraped)
+        store_jobs(scraped, current_user["sub"])
 
     return {
         "count": len(scraped),
-        "naukri": len(scraped_naukri),
-        "indeed": len(scraped_indeed)
+        "naukri": len(scraped)
+        # "indeed": len(scraped_indeed)
         }
 
 

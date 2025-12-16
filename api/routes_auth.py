@@ -69,12 +69,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         # Load user's jobs
         user_jobs = list(jobs_col.find({"owner": user_id}))
         if user_jobs:
-            store_jobs(user_jobs)
+            store_jobs(user_jobs, user_id)
 
         # Load user's resume
         resume_url = user.get("resume_url")
         if resume_url:
-            store_resume(resume_url)
+            store_resume(resume_url, user_id)
 
     except Exception as e:
         

@@ -81,7 +81,7 @@ def embed_texts(texts, batch_size=64):
 # ======================================================
 # STORE SCRAPED JOBS
 # ======================================================
-def store_jobs(scraped_jobs):
+def store_jobs(scraped_jobs, user_id: str):
     docs = []
     metas = []
 
@@ -101,7 +101,8 @@ def store_jobs(scraped_jobs):
             metas.append({
                 "type": "job",
                 "job_index": idx,
-                "source": job.get("link", "")
+                "source": job.get("link", ""),
+                "user_id": user_id
             })
 
     if not docs:
@@ -118,7 +119,7 @@ def store_jobs(scraped_jobs):
 # ======================================================
 # STORE RESUME (ImageKit / Local)
 # ======================================================
-def store_resume(pdf_source: str):
+def store_resume(pdf_source: str, user_id: str):
     try:
         if pdf_source.startswith("http"):
             resp = requests.get(pdf_source, timeout=10)
@@ -150,7 +151,7 @@ def store_resume(pdf_source: str):
 
     save_json(
         RESUME_JSON,
-        [{"doc": c, "meta": {"type": "resume", "chunk_index": i}}
+        [{"doc": c, "meta": {"type": "resume", "chunk_index": i, "user_id": user_id}}
          for i, c in enumerate(chunks)]
     )
 
@@ -190,7 +191,7 @@ def _cosine_similarities(query_emb, emb_matrix):
 # ======================================================
 # CHANGE 4: LAZY MODEL IN RETRIEVAL
 # ======================================================
-def retrieve_top_k(query, k_jobs=5, k_resume=5):
+def retrieve_top_k(query, user_id: str, k_jobs=5, k_resume=5):
     model = get_embedding_model()   #  lazy load here
     q_emb = model.encode([query])[0].astype(np.float32)
 
@@ -199,33 +200,49 @@ def retrieve_top_k(query, k_jobs=5, k_resume=5):
 
     job_results = []
     if job_sims.size:
-        for i in np.argsort(-job_sims)[:k_jobs]:
+        # for i in np.argsort(-job_sims)[:k_jobs]:
+        #     job_results.append({
+        #         "text": job_docs[i],
+        #         "score": float(job_sims[i]),
+        #         "meta": job_meta[i]
+        #     })
+        for i in np.argsort(-job_sims):
+            if job_meta[i].get("user_id") != user_id:
+                continue
             job_results.append({
                 "text": job_docs[i],
                 "score": float(job_sims[i]),
                 "meta": job_meta[i]
             })
+            if len(job_results) == k_jobs:
+                break
+
 
     resume_docs, resume_embs, resume_meta = _load_store(RESUME_JSON, RESUME_EMB)
     resume_sims = _cosine_similarities(q_emb, resume_embs)
 
     resume_results = []
     if resume_sims.size:
-        for i in np.argsort(-resume_sims)[:k_resume]:
+        for i in np.argsort(-resume_sims):
+            if resume_meta[i].get("user_id") != user_id:
+                continue
             resume_results.append({
                 "text": resume_docs[i],
                 "score": float(resume_sims[i]),
                 "meta": resume_meta[i]
             })
+            if len(resume_results) == k_resume:
+                break
+
 
     return job_results, resume_results
 
 # ======================================================
 # BUILD VECTOR DB (OPTIONAL)
 # ======================================================
-def build_vector_db(scraped_jobs, pdf_path="./resume.pdf"):
-    store_jobs(scraped_jobs)
-    store_resume(pdf_path)
-    print("Vector DB built successfully.")
+# def build_vector_db(scraped_jobs, pdf_path="./resume.pdf"):
+#     store_jobs(scraped_jobs)
+#     store_resume(pdf_path)
+#     print("Vector DB built successfully.")
 
 

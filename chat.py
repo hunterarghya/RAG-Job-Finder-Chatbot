@@ -3,6 +3,7 @@ from groq import Groq
 from dotenv import load_dotenv
 from vector import retrieve_top_k
 
+
 load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -12,7 +13,7 @@ if not GROQ_API_KEY:
 client = Groq(api_key=GROQ_API_KEY)
 
 
-def rag_answer(query: str):
+def rag_answer(query: str, user_id):
     """
     Performs RAG:
     1. Retrieves top job + resume chunks
@@ -20,10 +21,18 @@ def rag_answer(query: str):
     3. Queries Groq LLM
     """
     
-    job_results, resume_results = retrieve_top_k(query, k_jobs=5, k_resume=5)
+    job_results, resume_results = retrieve_top_k(query, user_id, k_jobs=5, k_resume=5)
 
+    # -------- SAFETY GUARD --------
     if not job_results and not resume_results:
-        context = "No relevant job or resume data found in vector database."
+        return (
+            "I don’t have any information about you yet. "
+            "Please upload your resume or scrape jobs before asking questions."
+        )
+    # ----------------------------------------
+
+    # if not job_results and not resume_results:
+    #     context = "No relevant job or resume data found in vector database."
     else:
         context = ""
         for jr in job_results:
@@ -41,8 +50,10 @@ def rag_answer(query: str):
 
     system_prompt = """
 You are a senior software engineer and technical recruiter.
-Use ONLY the provided context to answer questions.
-If context is insufficient, say so honestly.
+You MUST answer using ONLY the provided context.
+DO NOT use prior knowledge or assumptions.
+If the context does not contain the answer, say:
+"I don’t have enough information to answer that."
 Give clear and practical answers.
 """
 

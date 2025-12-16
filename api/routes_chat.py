@@ -28,6 +28,6 @@ def query_bot(
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
     
-    answer = rag_answer(question)
+    answer = rag_answer(question, current_user["sub"])
 
     return {"answer": answer}
