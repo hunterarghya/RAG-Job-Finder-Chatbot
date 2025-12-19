@@ -12,6 +12,10 @@ from api.imagekit_client import imagekit
 import os
 import bson
 
+from redbeat import RedBeatSchedulerEntry
+from worker import app as celery_app
+from datetime import timedelta
+
 router = APIRouter(prefix="/api", tags=["jobs"])
 
 
@@ -122,13 +126,13 @@ def trigger_scrape(
     pages: int = Form(1),
     current_user: dict = Depends(get_current_user)
 ):
-    # from scrape import scrape_indeed
+    from scrape import scrape_indeed
     from scrape_naukri import scrape_naukri
 
-    scraped = scrape_naukri(job_title.replace(" ", "+"), location, max_pages=int(pages))
-    # scraped_indeed = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
+    scraped_naukri = scrape_naukri(job_title.replace(" ", "+"), location, max_pages=int(pages))
+    scraped_indeed = scrape_indeed(job_title.replace(" ", "+"), location, max_pages=int(pages))
 
-    # scraped = scraped_naukri + scraped_indeed
+    scraped = scraped_naukri + scraped_indeed
     
     for s in scraped:
         s["owner"] = current_user["sub"]
@@ -140,25 +144,48 @@ def trigger_scrape(
 
     return {
         "count": len(scraped),
-        "naukri": len(scraped)
-        # "indeed": len(scraped_indeed)
+        "naukri": len(scraped_naukri),
+        "indeed": len(scraped_indeed)
         }
 
 
-# ------------------ GET SCRAPED JOBS --------------------
-# @router.get("/jobs")
-# def get_jobs(current_user: dict = Depends(get_current_user)):
-#     user_id = current_user["sub"]
+#-------------------CELERY BEAT SCHEDULER-------------------------
+@router.post("/schedule-scraper")
+def manage_schedule(
+    frequency: str = Form(...), # "off", "daily", "weekly"
+    title: str = Form(...),
+    location: str = Form(""),
+    current_user: dict = Depends(get_current_user)
+):
+    user_id = current_user["sub"]
+    entry_name = f"scrape-task-{user_id}"
 
-#     jobs = list(jobs_col.find({"owner": user_id}))
+    # If "off", delete the entry from Redis
+    if frequency == "off":
+        try:
+            entry = RedBeatSchedulerEntry.from_key(f"redbeat:{entry_name}", app=celery_app)
+            entry.delete()
+            return {"message": "Schedule turned off"}
+        except KeyError:
+            return {"message": "No active schedule found"}
 
+    # Define interval
+    interval = timedelta(days=1) if frequency == "daily" else timedelta(days=7)
     
-#     for j in jobs:
-#         j["_id"] = str(j["_id"])
+    # Create or update the periodic task
+    entry = RedBeatSchedulerEntry(
+        entry_name,
+        'worker.scheduled_job_process',
+        interval,
+        args=[user_id, title, location],
+        app=celery_app
+    )
+    entry.save()
+    
+    return {"message": f"Schedule set to {frequency}"}
 
-#     return {"jobs": jobs}
 
-
+#--------------------LOAD JOBS (VIEW SCRAPED JOBS)-----------------------
 from fastapi import Query
 
 @router.get("/jobs")

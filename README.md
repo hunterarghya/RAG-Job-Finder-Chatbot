@@ -6,12 +6,14 @@ A lightweight RAG-based chatbot that:
 - Embeds resume + job descriptions into a vector database
 - Matches the best jobs for a candidate
 - Provides conversational insights using Groq LLMs
+- Automatically monitors new jobs and notifies users via email when high-fit roles appear
 
 Purpose of the Application:
 
-A unified job-search platform that automatically scrapes jobs from multiple portals like LinkedIn, Indeed, Naukri etc, centralizes them in one dashboard, and uses an AI chatbot to analyze your resume, recommend the best-fit roles, and highlight missing skills or market demands—so you don't need to visit multiple sites or read every job description manually.
+A unified job-search platform that **automatically scrapes jobs from multiple portals like LinkedIn, Indeed, Naukri etc** , centralizes them in one dashboard, and uses an **AI chatbot** to **analyze your resume**, recommend the **best-fit roles** according to the skills in the resume or the user's **personal preferences**, and highlight **missing skills** or **market demands**—so you don't need to visit multiple sites or read every job description manually.
+Additionally, the system can **run automated background job searches on a schedule (daily / weekly)** and proactively notify users when strong matches are found, removing the need for manual searching altogether.
 
-🚀 **Demo:** [Watch a demo](https://drive.google.com/file/d/1hKapBRW6ksG9Rwhlv8xdTEFouK8ZJhfH/view?usp=sharing)
+🚀 **Demo:** [Watch a demo](https://drive.google.com/file/d/18omur_TgE-z8Go6iHtZmHfMKxK9SpGbB/view?usp=sharing)
 
 ---
 
@@ -56,6 +58,20 @@ A unified job-search platform that automatically scrapes jobs from multiple port
 - Automatic preprocessing + splitting
 - Vector embedding with Sentence Transformers
 
+### ⏰ Automated Job Monitoring
+
+- Users can schedule automatic job scraping:
+  - **Off**
+  - **Daily**
+  - **Weekly**
+- Scheduler runs in the background using **Celery + Redis**
+- Each scheduled run:
+  - Scrapes new jobs based on user-defined title and location
+  - Matches jobs against resume embeddings
+  - Computes similarity scores
+  - Sends an **email notification** when a job exceeds a fit threshold (e.g. ≥ 0.6)
+- Fully async and non-blocking for the main API
+
 ### 🗄️ Database
 
 MongoDB stores:
@@ -74,9 +90,21 @@ ChromaDB stores:
 
 - Powered by LLM via Groq API
 - Answers smart queries like:
+
   - _“Which of the newly scraped jobs are best for me?”_
   - _“What should I improve in my resume?”_
   - _“Compare my resume to the job requirements.”_
+
+  ### 📧 Email Notifications
+
+- Triggered automatically by background workers
+- Sent when a job exceeds a similarity threshold
+- Includes:
+  - Job title
+  - Company
+  - Match score
+  - Apply link
+- Delivered to the user’s registered email address
 
 ### 🖥️ UI
 
@@ -101,8 +129,11 @@ ChromaDB stores:
 - **PyMuPDF & PyPDF** – Resume text extraction
 - **Selenium + BeautifulSoup** – Job scraping from Indeed and Naukri
 - **Groq LLM API** – Fast LLM inference for chatbot responses
+- **Celery** – Distributed background task processing
+- **Redis** – Message broker & scheduler backend
+- **Celery RedBeat** – Persistent periodic task scheduler
 - **Uvicorn** – ASGI server
-- **Docker & Docker Compose** – Containerized deployment (future)
+- **Docker & Docker Compose** – Redis & Celery services
 
 ---
 
@@ -118,7 +149,7 @@ cd RAG-Job-Finder-Chatbot
 ### 2️⃣ Create a virtual environment
 
 ```bash
-python -m venv .venv
+py -3.10 -m venv .venv
 source .venv/bin/activate      # Linux / Mac
 .venv\Scripts\activate         # Windows
 ```
@@ -133,10 +164,42 @@ pip install -r requirements.txt
 
 Set up your environment varialbles in `.env` as in `env_example.txt`
 
-### 5️⃣ Run the server
+### 5️⃣ Set up Celery & Redis services
+
+These services are required for scheduled job scraping and email notifications.
+
+#### 🔹 Start Redis (Docker)
+
+Open a new terminal (terminal 2).
 
 ```bash
-uvicorn app.main:app --reload
+cd RAG-Job-Finder-Chatbot
+docker compose up --build
+```
+
+#### 🔹 Start Celery Worker
+
+Open another new terminal (terminal 3).
+
+```bash
+cd RAG-Job-Finder-Chatbot
+
+.venv\Scripts\activate         # Windows
+# or
+source .venv/bin/activate      # Linux / Mac
+
+set PYTHONPATH=.               # Windows
+# or
+export PYTHONPATH=.            # Linux / Mac
+
+celery -A worker.app worker --loglevel=info --pool=solo
+
+```
+
+### 5️⃣ Run the server (from the first terminal)
+
+```bash
+uvicorn api.main:app --reload
 ```
 
 Visit:  
@@ -157,12 +220,24 @@ Returns JWT token.
 
 ### ✔ Scrape Jobs
 
-**POST** `/scrape-jobs`  
-Scrapes from Indeed and stores full job data.
+**POST** `/scrape`  
+Scrapes from Indeed and Naukri and stores full job data.
+
+### ✔ Configure the scheduler
+
+**POST** `/schedule-scraper`
+
+- Parameters:
+
+  - Job title
+  - Location
+  - Frequency: off | daily | weekly
+
+- Creates or updates a background scheduled task
 
 ### ✔ Upload Resume
 
-**POST** `/upload-resume`  
+**POST** `/upload_resume`  
 Stores + embeds resume in ChromaDB.
 
 ### ✔ Get All Jobs

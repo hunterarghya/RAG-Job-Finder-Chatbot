@@ -1,0 +1,9 @@
+celery==5.6.0
+celery-redbeat==2.3.3
+redis==7.1.0
+python-dotenv==1.0.1
+# Basic dependencies for Celery/RedBeat
+kombu==5.6.1
+billiard==4.2.4
+vine==5.1.0
+amqp==5.3.1

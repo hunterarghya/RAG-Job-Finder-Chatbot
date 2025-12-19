@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: rag-job-finder
-    runtime: python
-    pythonVersion: 3.10.5
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT

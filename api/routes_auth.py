@@ -36,18 +36,6 @@ def register(payload: RegisterIn):
 
 
 
-# @router.post("/login")
-# def login(form_data: OAuth2PasswordRequestForm = Depends()):
-#     user = users_col.find_one({"email": form_data.username})
-#     if not user or not verify_password(form_data.password, user["password"]):
-#         raise HTTPException(401, "Invalid credentials")
-
-#     user_id = str(user["_id"])
-#     token = create_access_token({"sub": user_id, "email": user["email"]})
-#     return {"access_token": token, "token_type": "bearer", "user_id": user_id}
-
-
-
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):

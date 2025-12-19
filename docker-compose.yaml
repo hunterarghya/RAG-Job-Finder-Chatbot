@@ -1,25 +1,17 @@
-# version: "3.9"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
 
-# services:
-#   api:
-#     build: .
-#     container_name: rag-job-api
-#     env_file: .env
-#     ports:
-#       - "8000:8000"
-#     depends_on:
-#       - mongo
-
-#   mongo:
-#     image: mongo:5
-#     container_name: rag-job-mongo
-#     restart: always
-#     environment:
-#       MONGO_INITDB_DATABASE: ragdb
-#     ports:
-#       - "27017:27017"
-#     volumes:
-#       - mongo_data:/data/db
-
-# volumes:
-#   mongo_data:
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A worker.app beat -l info -S redbeat.RedBeatScheduler
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDBEAT_REDIS_URL=redis://redis:6379/0

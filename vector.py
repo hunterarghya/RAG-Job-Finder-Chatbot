@@ -19,14 +19,6 @@ JOBS_EMB = DATA_DIR / "jobs_embs.npy"
 RESUME_JSON = DATA_DIR / "resume_docs.json"
 RESUME_EMB = DATA_DIR / "resume_embs.npy"
 
-# ======================================================
-#  CHANGE 1: REMOVE GLOBAL MODEL LOAD
-#  REMOVED:
-# from sentence_transformers import SentenceTransformer
-# embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-#
-#  REPLACED WITH LAZY LOADER
-# ======================================================
 
 _embedding_model = None
 
@@ -64,7 +56,7 @@ def load_json(path: Path):
         return json.load(f)
 
 # ======================================================
-#  CHANGE 2: USE LAZY MODEL IN EMBEDDING
+# USE LAZY MODEL IN EMBEDDING
 # ======================================================
 def embed_texts(texts, batch_size=64):
     model = get_embedding_model()   #  lazy load here
@@ -117,7 +109,7 @@ def store_jobs(scraped_jobs, user_id: str):
     print(f"Stored {len(docs)} job chunks.")
 
 # ======================================================
-# STORE RESUME (ImageKit / Local)
+# STORE RESUME
 # ======================================================
 def store_resume(pdf_source: str, user_id: str):
     try:
@@ -159,7 +151,7 @@ def store_resume(pdf_source: str, user_id: str):
     print(f"Stored {len(chunks)} resume chunks.")
 
 # ======================================================
-# CHANGE 3: SAFE LOAD STORE (NO MODEL AT IMPORT)
+# SAFE LOAD STORE (NO MODEL AT IMPORT)
 # ======================================================
 def _load_store(json_path, emb_path):
     items = load_json(json_path)
@@ -189,7 +181,7 @@ def _cosine_similarities(query_emb, emb_matrix):
     return (M @ q).astype(np.float32)
 
 # ======================================================
-# CHANGE 4: LAZY MODEL IN RETRIEVAL
+# LAZY MODEL IN RETRIEVAL
 # ======================================================
 def retrieve_top_k(query, user_id: str, k_jobs=5, k_resume=5):
     model = get_embedding_model()   #  lazy load here
@@ -200,12 +192,6 @@ def retrieve_top_k(query, user_id: str, k_jobs=5, k_resume=5):
 
     job_results = []
     if job_sims.size:
-        # for i in np.argsort(-job_sims)[:k_jobs]:
-        #     job_results.append({
-        #         "text": job_docs[i],
-        #         "score": float(job_sims[i]),
-        #         "meta": job_meta[i]
-        #     })
         for i in np.argsort(-job_sims):
             if job_meta[i].get("user_id") != user_id:
                 continue
@@ -236,13 +222,5 @@ def retrieve_top_k(query, user_id: str, k_jobs=5, k_resume=5):
 
 
     return job_results, resume_results
-
-# ======================================================
-# BUILD VECTOR DB (OPTIONAL)
-# ======================================================
-# def build_vector_db(scraped_jobs, pdf_path="./resume.pdf"):
-#     store_jobs(scraped_jobs)
-#     store_resume(pdf_path)
-#     print("Vector DB built successfully.")
 
 

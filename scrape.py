@@ -177,7 +177,7 @@ def scrape_indeed(job, location, max_pages=1):
     # ==============================
     chrome_options = Options()
 
-    # ❌ DO NOT use headless locally (Indeed blocks it)
+    #  DO NOT use headless locally (Indeed blocks it)
     # chrome_options.add_argument("--headless=new")
 
     chrome_options.add_argument("--no-sandbox")
@@ -185,7 +185,7 @@ def scrape_indeed(job, location, max_pages=1):
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
 
-    # ✅ Realistic User-Agent (IMPORTANT)
+    # Realistic User-Agent (IMPORTANT)
     chrome_options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -207,7 +207,7 @@ def scrape_indeed(job, location, max_pages=1):
         driver.get(url)
         time.sleep(3)
 
-        # 🔽 Scroll to trigger lazy loading
+        # Scroll to trigger lazy loading
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(2)
 
