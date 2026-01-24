@@ -1,7 +1,270 @@
 <!doctype html>
-<html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>925buddy - Job Search Curated For You</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #dbeafe;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* --- Updated Header / Branding --- */
+      /* --- New Black Banner Header --- */
+      .header {
+        display: flex;
+        justify-content: center;
+        align-items: baseline;
+        gap: 20px;
+        padding: 20px 0; /* Vertical padding for the banner */
+        background: #000000; /* Solid Black Banner */
+        width: 100%; /* Spans across the entire screen */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        z-index: 20; /* Stays on top of everything */
+      }
+
+      .brand-name {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #d4a017; /* Headline now in Solid Dark Yellow */
+        margin: 0;
+        letter-spacing: -1px;
+      }
+
+      .brand-subtext {
+        font-size: 1.3rem;
+        color: #ffffff; /* Subtext in White for perfect contrast */
+        font-weight: 500;
+      }
+
+      /* --- Slider Wrapper --- */
+      .slider-wrapper {
+        flex: 1;
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .slider-content {
+        display: flex;
+        width: 300%; /* 3 slides */
+        height: 100%;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth slide */
+      }
+
+      .slide {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8%; /* Increased horizontal spread */
+        box-sizing: border-box;
+      }
+
+      /* --- Widened Text --- */
+      .slide-text {
+        max-width: 65%; /* Stretches the writing further */
+      }
+
+      .slide-text h1 {
+        font-size: 3.2rem;
+        color: #1a202c;
+        margin-bottom: 15px;
+        line-height: 1.1;
+      }
+
+      .slide-text p {
+        font-size: 1.4rem;
+        color: #4a5568;
+        line-height: 1.5;
+        max-width: 90%;
+      }
+
+      .slide-action {
+        flex-shrink: 0;
+      }
+
+      .btn {
+        text-decoration: none;
+        background: #d4a017;
+        color: white;
+        padding: 22px 50px;
+        border-radius: 12px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        box-shadow: 0 10px 20px rgba(212, 160, 23, 0.3);
+        transition: all 0.3s ease;
+        display: inline-block;
+      }
+
+      .btn:hover {
+        background: #b8860b;
+        transform: translateY(-5px);
+      }
+
+      .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none; /* Removed the background */
+        border: none;
+        color: #d4a017; /* Solid dark yellow */
+        font-size: 2rem; /* Large, clear arrows */
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.3s ease;
+        padding: 20px;
+        line-height: 1;
+      }
+
+      .nav-btn:hover {
+        color: #b8860b; /* Darker on hover */
+        transform: translateY(-50%) scale(1.2); /* Grow effect */
+      }
+
+      #prevBtn {
+        left: 10px;
+      }
+      #nextBtn {
+        right: 10px;
+      }
+
+      /* --- Dots --- */
+      .dots {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 12px;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        background: rgba(212, 160, 23, 0.3);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .dot.active {
+        background: #d4a017;
+        transform: scale(1.4);
+      }
+    </style>
+  </head>
   <body>
-    <h2>JOB FINDER WITH CHATBOT ASSISTANT</h2>
-    <a href="/static/login.html">Login / Register</a>
+    <div class="header">
+      <h1 class="brand-name">925buddy/.</h1>
+      <div class="brand-subtext">Job search, curated just for you</div>
+    </div>
+
+    <div class="slider-wrapper">
+      <!-- <button class="nav-btn" id="prevBtn">&lt;</button>
+      <button class="nav-btn" id="nextBtn">&gt;</button> -->
+      <button class="nav-btn" id="prevBtn">&#9664;</button>
+      <button class="nav-btn" id="nextBtn">&#9654;</button>
+
+      <div class="slider-content" id="sliderContent">
+        <div class="slide">
+          <div class="slide-text">
+            <h1>Why look in ten places when you can look in one?</h1>
+            <p>
+              Leave the scavenging to us. We'll bring you listings from every
+              major job portal.
+            </p>
+          </div>
+          <div class="slide-action">
+            <a href="/static/login.html" class="btn">Get Started Now</a>
+          </div>
+        </div>
+
+        <div class="slide">
+          <div class="slide-text">
+            <h1>Why strain your eye scrolling through job descriptions?</h1>
+            <p>
+              Upload your resume and use our intelligent chatbot to find your
+              perfect role.
+            </p>
+          </div>
+          <div class="slide-action">
+            <a href="/static/login.html" class="btn">Talk to AI</a>
+          </div>
+        </div>
+
+        <div class="slide">
+          <div class="slide-text">
+            <h1>Your Career on Autopilot</h1>
+            <p>
+              Set your schedule. We’ll curate the best opportunities and deliver
+              them to your inbox daily.
+            </p>
+          </div>
+          <div class="slide-action">
+            <a href="/static/login.html" class="btn">Register Free</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="dots" id="dotsContainer">
+        <div class="dot active" onclick="goToSlide(0)"></div>
+        <div class="dot" onclick="goToSlide(1)"></div>
+        <div class="dot" onclick="goToSlide(2)"></div>
+      </div>
+    </div>
+
+    <script>
+      const sliderContent = document.getElementById("sliderContent");
+      const dots = document.querySelectorAll(".dot");
+      let currentSlide = 0;
+      const totalSlides = 3;
+      let autoSlideTimer;
+
+      function updateSlider() {
+        // Move the container
+        sliderContent.style.transform = `translateX(-${currentSlide * 33.333}%)`;
+
+        // Update dots
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("active", index === currentSlide);
+        });
+      }
+
+      function nextSlide() {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        updateSlider();
+        resetTimer();
+      }
+
+      function prevSlide() {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        updateSlider();
+        resetTimer();
+      }
+
+      function goToSlide(index) {
+        currentSlide = index;
+        updateSlider();
+        resetTimer();
+      }
+
+      function resetTimer() {
+        clearInterval(autoSlideTimer);
+        autoSlideTimer = setInterval(nextSlide, 4000); // 2 second interval
+      }
+
+      // Event Listeners
+      document.getElementById("nextBtn").addEventListener("click", nextSlide);
+      document.getElementById("prevBtn").addEventListener("click", prevSlide);
+
+      // Initial Timer Start
+      resetTimer();
+    </script>
   </body>
 </html>

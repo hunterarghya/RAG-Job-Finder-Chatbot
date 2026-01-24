@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
   <body>
     <h2>Register</h2>
@@ -59,6 +59,199 @@
 
         const j = await res.json();
 
+        if (j.access_token) {
+          localStorage.setItem("token", j.access_token);
+          location.href = "/static/dashboard.html";
+        } else alert(JSON.stringify(j));
+      };
+    </script>
+  </body>
+</html> -->
+
+<!doctype html>
+<html>
+  <head>
+    <title>Auth - Job Finder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #dbeafe;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      /* Main Glass Card */
+      .auth-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        width: 380px;
+        min-height: 400px; /* Fixed height to prevent jumping */
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Tabs for Login/Register */
+      .tabs {
+        display: flex;
+        background: rgba(255, 215, 0, 0.1);
+        border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+      }
+
+      .tab {
+        flex: 1;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: bold;
+        color: #5c4d00;
+        transition: 0.3s;
+      }
+
+      .tab.active {
+        background: rgba(255, 215, 0, 0.3);
+        border-bottom: 3px solid #d4a017;
+      }
+
+      /* Form Styling */
+      .form-container {
+        padding: 30px;
+        flex-grow: 1;
+      }
+
+      .auth-form {
+        display: none; /* Hidden by default */
+        flex-direction: column;
+      }
+
+      .auth-form.active {
+        display: flex; /* Show active form */
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background: #d4a017; /* Dark yellow button */
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #b8860b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-card">
+      <div class="tabs">
+        <div id="loginTab" class="tab active" onclick="showForm('login')">
+          Login
+        </div>
+        <div id="regTab" class="tab" onclick="showForm('register')">
+          Register
+        </div>
+      </div>
+
+      <div class="form-container">
+        <form id="login" class="auth-form active">
+          <h2>Welcome Back</h2>
+          <input id="email" placeholder="Email" required />
+          <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            required
+          />
+          <button type="submit">Login</button>
+        </form>
+
+        <form id="reg" class="auth-form">
+          <h2>Create Account</h2>
+          <input name="name" placeholder="Your Name" required />
+          <input name="email" placeholder="Email" required />
+          <input
+            name="password"
+            type="password"
+            placeholder="Set Password"
+            required
+          />
+          <button type="submit">Register</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Tab Switching Logic
+      function showForm(type) {
+        // Toggle forms
+        document.getElementById("login").classList.remove("active");
+        document.getElementById("reg").classList.remove("active");
+        document
+          .getElementById(type === "login" ? "login" : "reg")
+          .classList.add("active");
+
+        // Toggle tab highlights
+        document.getElementById("loginTab").classList.remove("active");
+        document.getElementById("regTab").classList.remove("active");
+        document
+          .getElementById(type === "login" ? "loginTab" : "regTab")
+          .classList.add("active");
+      }
+
+      // =============== REGISTER SCRIPT =================
+      document.getElementById("reg").onsubmit = async (e) => {
+        e.preventDefault();
+        const f = e.target;
+        const res = await fetch("/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: f.name.value,
+            email: f.email.value,
+            password: f.password.value,
+          }),
+        });
+        const j = await res.json();
+        if (j.access_token) {
+          localStorage.setItem("token", j.access_token);
+          location.href = "/static/dashboard.html";
+        } else alert(JSON.stringify(j));
+      };
+
+      // =============== LOGIN SCRIPT =================
+      document.getElementById("login").onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+
+        const fd = new FormData();
+        fd.append("username", email);
+        fd.append("password", pass);
+
+        const res = await fetch("/auth/login", {
+          method: "POST",
+          body: fd,
+        });
+        const j = await res.json();
         if (j.access_token) {
           localStorage.setItem("token", j.access_token);
           location.href = "/static/dashboard.html";
